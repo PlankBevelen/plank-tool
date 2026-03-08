@@ -1,0 +1,28 @@
+const jwt = require('jsonwebtoken');
+const ApiError = require('../utils/ApiError');
+const User = require('../models/user.model');
+
+const auth = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      throw new Error();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      throw new Error();
+    }
+
+    req.user = user;
+    req.token = token;
+    next();
+  } catch (error) {
+    next(new ApiError(401, 'Please authenticate'));
+  }
+};
+
+module.exports = auth;
