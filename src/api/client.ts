@@ -2,7 +2,8 @@ import axios from 'axios';
 import { useUserStore } from '@/stores/useUserStore';
 
 const client = axios.create({
-  baseURL: 'http://localhost:8686/api',
+  baseURL: '/api',
+  withCredentials: true,
   timeout: 10000,
 });
 

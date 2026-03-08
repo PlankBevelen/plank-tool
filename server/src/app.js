@@ -7,6 +7,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const path = require('path');
 
 const app = express();
 
@@ -14,7 +15,11 @@ const app = express();
 app.use(helmet());
 
 // Enable cors
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+app.options('*', cors());
 
 // Limit requests from same API
 const limiter = rateLimit({
@@ -32,6 +37,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
+
+// Serve static files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Logger
 if (process.env.NODE_ENV === 'development') {

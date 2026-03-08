@@ -54,7 +54,7 @@ export default function ImageTool() {
         activeId={activeTab}
         onChange={(id: string) => setActiveTab(id as Tab)}
       />
-
+      <div className="mt-8"></div>
       {activeTab === 'compress' && <ImageCompress />}
       {/* {activeTab === 'convert' && <Convert />}
       {activeTab === 'qrcode' && <QRCode />} */}
