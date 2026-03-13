@@ -11,7 +11,16 @@ const compressSchema = {
     quality: Joi.number().min(10).max(100),
     maxWidth: Joi.number().min(100).max(8192),
     maxHeight: Joi.number().min(100).max(8192),
-    format: Joi.string().valid('jpeg', 'jpg', 'png', 'webp')
+    format: Joi.string().valid('jpeg', 'jpg', 'png', 'webp', 'avif')
+  })
+};
+
+const convertSchema = {
+  body: Joi.object().keys({
+    quality: Joi.number().min(10).max(100),
+    maxWidth: Joi.number().min(100).max(8192),
+    maxHeight: Joi.number().min(100).max(8192),
+    format: Joi.string().valid('jpeg', 'jpg', 'png', 'webp', 'avif').required()
   })
 };
 
@@ -36,6 +45,13 @@ router.post(
   upload.single('image'),
   validate(compressSchema),
   imageController.compress
+);
+
+router.post(
+  '/convert',
+  upload.single('image'),
+  validate(convertSchema),
+  imageController.convert
 );
 
 /**

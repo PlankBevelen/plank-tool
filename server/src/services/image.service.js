@@ -6,7 +6,14 @@ const archiver = require('archiver');
 
 const UPLOADS_DIR = path.join(__dirname, '../../uploads');
 
-// Ensure uploads directory exists
+const normalizeFormat = (format) => {
+  if (!format) return undefined;
+  const f = String(format).toLowerCase();
+  if (f === 'jpg') return 'jpeg';
+  if (f === 'tif') return 'tiff';
+  return f;
+};
+
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -40,12 +47,11 @@ const compressImage = async (fileBuffer, options = {}) => {
     }
 
     // Determine format
-    const targetFormat = metadata.format;
+    const targetFormat = normalizeFormat(format) || normalizeFormat(metadata.format) || 'jpeg';
     
     // Apply compression options based on format
     switch (targetFormat) {
       case 'jpeg':
-      case 'jpg':
         pipeline = pipeline.jpeg({ quality, mozjpeg: true });
         break;
       case 'png':
@@ -54,9 +60,12 @@ const compressImage = async (fileBuffer, options = {}) => {
       case 'webp':
         pipeline = pipeline.webp({ quality });
         break;
+      case 'avif':
+        pipeline = pipeline.avif({ quality });
+        break;
       default:
         // Keep original format if supported, otherwise default to jpeg
-        if (['jpeg', 'png', 'webp', 'tiff', 'gif'].includes(targetFormat)) {
+        if (['jpeg', 'png', 'webp', 'avif', 'tiff', 'gif'].includes(targetFormat)) {
           // Special handling for other formats if needed, otherwise just pass quality
           // Note: toFormat might not support quality for all formats like gif in the same way
           pipeline = pipeline.toFormat(targetFormat);

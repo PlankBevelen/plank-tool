@@ -6,9 +6,10 @@ import type { TabItem } from "@/components/PlankTab";
 import PlankTab from "@/components/PlankTab";
 import JsonFormat from "./components/JsonFormat";
 import JsonConvert from "./components/JsonConvert";
+import JsonTypeGen from "./components/JsonTypeGen";
 import { motion } from "framer-motion";
 
-type Tab = 'format' | 'convert';
+type Tab = 'format' | 'convert' | 'typegen';
 const tabs: TabItem[] = [
   {
     id: 'format',
@@ -17,6 +18,10 @@ const tabs: TabItem[] = [
   {
     id: 'convert',
     label: '格式转换',
+  },
+  {
+    id: 'typegen',
+    label: '类型推导',
   },
 ];
 
@@ -59,6 +64,7 @@ export default function JsonTool() {
       <motion.div key={activeTab} initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }}>
         {activeTab === 'format' && <JsonFormat />}
         {activeTab === 'convert' && <JsonConvert />}
+        {activeTab === 'typegen' && <JsonTypeGen />}
       </motion.div>
 
     </div>

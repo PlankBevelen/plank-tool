@@ -5,6 +5,7 @@ import type { TabItem } from "@/components/PlankTab";
 import PlankTab from "@/components/PlankTab";
 import { useState } from "react";
 import ImageCompress from './components/ImageCompress';
+import ImageConvert from './components/ImageConvert';
 
 type Tab = 'compress' | 'convert' | 'qrcode';
 const tabs: TabItem[] = [
@@ -29,7 +30,7 @@ export default function ImageTool() {
 
   const handleFavorite = () => {
     if (!isLoggedIn) { toast.error('请先登录'); return; }
-    toggleFavorite('json');
+    toggleFavorite('image');
     toast.success(isFav ? '已取消收藏' : '收藏成功');
   };
 
@@ -56,8 +57,8 @@ export default function ImageTool() {
       />
       <div className="mt-8"></div>
       {activeTab === 'compress' && <ImageCompress />}
-      {/* {activeTab === 'convert' && <Convert />}
-      {activeTab === 'qrcode' && <QRCode />} */}
+      {activeTab === 'convert' && <ImageConvert />}
+      {/* {activeTab === 'qrcode' && <QRCode />} */}
     </div>
   )
 }

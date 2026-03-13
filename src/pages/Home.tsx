@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { useMenuStore } from '../stores/useMenuStore';
+import { useUserStore } from '@/stores/useUserStore';
 import { toast } from 'sonner';
 import Icon from '@/lib/icon';
 
@@ -10,16 +10,8 @@ const tools = [
     label: '文本工具',
     path: '/text',
     icon: 'text',
-    desc: '字数统计 · 翻译 · Markdown 转 HTML',
-    badge: '3 项功能',
-  },
-  {
-    id: 'time',
-    label: '时间工具',
-    path: '/time',
-    icon: 'time',
-    desc: '时间戳转换 · 倒计时 · 节假日查询',
-    badge: '3 项功能',
+    desc: '文本 Diff 对比：双屏对比差异',
+    badge: '1 项功能',
   },
   {
     id: 'image',
@@ -27,15 +19,31 @@ const tools = [
     path: '/image',
     icon: 'image',
     desc: '图片压缩 · 格式转换 · 二维码生成',
-    badge: '3 项功能',
+    badge: '2 项功能',
   },
   {
     id: 'json',
     label: 'JSON 工具',
     path: '/json',
     icon: 'json',
-    desc: 'JSON 格式化 · 校验 · 格式转换',
-    badge: '2 项功能',
+    desc: 'JSON 格式化 · 转换 · 类型推导',
+    badge: '3 项功能',
+  },
+  {
+    id: 'jwt',
+    label: 'JWT 工具',
+    path: '/jwt',
+    icon: 'jwt',
+    desc: 'JWT 解析 · 过期检查 · HS256 验签',
+    badge: '3 项功能',
+  },
+  {
+    id: 'codec',
+    label: '编码工具',
+    path: '/codec',
+    icon: 'code',
+    desc: 'Base64 · URL · Unicode · 哈希 · UUID · 正则',
+    badge: '6 项功能',
   },
 ];
 
@@ -55,14 +63,14 @@ const itemVariants = {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { favorites, toggleFavorite } = useMenuStore();
+  const { favorites, toggleFavorite, isLoggedIn } = useUserStore();
 
   const handleFavorite = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    /* if (!isLoggedIn) {
-      toast.error('请先登录后再收藏');
+    if (!isLoggedIn) {
+      toast.error('请先登录');
       return;
-    } */
+    }
     toggleFavorite(id);
     toast.success(favorites.includes(id) ? '已取消收藏' : '收藏成功');
   };

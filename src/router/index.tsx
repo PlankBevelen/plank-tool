@@ -45,9 +45,23 @@ export const router = createBrowserRouter([
         }
       },
       {
-        path: '/time',
+        path: '/jwt',
         lazy: async () => {
-          const mod = await import('../pages/TimeTool');
+          const mod = await import('../pages/JwtTool');
+          return { Component: mod.default };
+        }
+      },
+      {
+        path: '/codec',
+        lazy: async () => {
+          const mod = await import('../pages/CodecTool');
+          return { Component: mod.default };
+        }
+      },
+      {
+        path: '/settings',
+        lazy: async () => {
+          const mod = await import('../pages/Settings');
           return { Component: mod.default };
         }
       },

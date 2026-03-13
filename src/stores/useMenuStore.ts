@@ -5,10 +5,6 @@ import { persist } from 'zustand/middleware';
 export interface MenuState {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
-  username: string | null;
-  favorites: string[];
-  toggleFavorite: (id: string) => void;
-  clearFavorites: () => void;
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
 }
@@ -21,14 +17,6 @@ export const useMenuStore = create<MenuState>()(
         const next = get().theme === 'light' ? 'dark' : 'light';
         set({ theme: next });
         document.documentElement.classList.toggle('dark', next === 'dark');
-      },
-      username: null,
-      favorites: [],
-      toggleFavorite: (id: string) => {
-        set({ favorites: [...get().favorites, id] })
-      },
-      clearFavorites: () => {
-        set({ favorites: [] })
       },
       sidebarCollapsed: false,
       toggleSidebar: () => {

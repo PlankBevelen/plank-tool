@@ -30,27 +30,37 @@ export const useUserStore = create<UserState>()(
       favorites: [],
 
       login: (token, user) => {
-        set({ token, user, isLoggedIn: true });
+        const favorites = Array.isArray((user as any)?.favorites) ? (user as any).favorites : get().favorites;
+        set({ token, user, isLoggedIn: true, favorites });
       },
 
       logout: () => {
-        set({ token: null, user: null, isLoggedIn: false });
+        set({ token: null, user: null, isLoggedIn: false, favorites: [] });
         toast.info('已退出登录');
       },
 
       toggleFavorite: (tool: string) => {
-        const { favorites } = get();
+        const { favorites, isLoggedIn } = get();
+        if (!isLoggedIn) return;
+
         const newFavorites = favorites.includes(tool)
           ? favorites.filter((f) => f !== tool)
           : [...favorites, tool];
         set({ favorites: newFavorites });
+
+        client.put('/users/favorites', { favorites: newFavorites })
+          .catch(() => {
+            set({ favorites });
+            toast.error('收藏同步失败');
+          });
       },
 
       fetchProfile: async () => {
         try {
           const res: any = await client.get('/users/profile');
           if (res.code === 200) {
-            set({ user: res.data.user });
+            const fav = Array.isArray(res.data.user?.favorites) ? res.data.user.favorites : [];
+            set({ user: res.data.user, favorites: fav });
           }
         } catch (error) {
           console.error('Failed to fetch profile', error);

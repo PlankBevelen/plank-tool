@@ -32,7 +32,8 @@ describe('Auth Endpoints', () => {
       .send({
         username: 'testuser',
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
+        confirmPassword: 'password123'
       });
     
     expect(res.statusCode).toEqual(201);
@@ -47,7 +48,8 @@ describe('Auth Endpoints', () => {
       .send({
         username: 'testuser',
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
+        confirmPassword: 'password123'
       });
 
     const res = await request(app)
@@ -67,7 +69,8 @@ describe('Auth Endpoints', () => {
       .send({
         username: 'testuser',
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
+        confirmPassword: 'password123'
       });
 
     const res = await request(app)

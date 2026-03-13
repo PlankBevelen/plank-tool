@@ -37,6 +37,37 @@ const compress = catchAsync(async (req, res) => {
   });
 });
 
+const convert = catchAsync(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a file');
+  }
+
+  const options = {
+    quality: req.body.quality ? parseInt(req.body.quality, 10) : 90,
+    maxWidth: req.body.maxWidth ? parseInt(req.body.maxWidth, 10) : 8192,
+    maxHeight: req.body.maxHeight ? parseInt(req.body.maxHeight, 10) : 8192,
+    format: req.body.format
+  };
+
+  const result = await imageService.compressImage(req.file.buffer, options);
+
+  const originalSize = req.file.size;
+  const compressedSize = result.size;
+  const reduction = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
+
+  const protocol = req.protocol;
+  const host = req.get('host');
+  const url = `${protocol}://${host}/uploads/${result.filename}`;
+
+  res.status(httpStatus.OK).send({
+    ...result,
+    url,
+    originalSize,
+    compressedSize,
+    reduction: parseFloat(reduction)
+  });
+});
+
 const downloadZip = catchAsync(async (req, res) => {
   const { files } = req.body;
   
@@ -73,5 +104,6 @@ const downloadZip = catchAsync(async (req, res) => {
 
 module.exports = {
   compress,
+  convert,
   downloadZip
 };

@@ -7,6 +7,17 @@ const getProfile = catchAsync(async (req, res) => {
   success(res, { user }, 'User profile retrieved successfully');
 });
 
+const updateFavorites = catchAsync(async (req, res) => {
+  const { favorites } = req.body;
+  req.user.favorites = favorites;
+  await req.user.save();
+
+  const user = req.user.toObject();
+  delete user.password;
+  success(res, { user }, 'Favorites updated successfully');
+});
+
 module.exports = {
-  getProfile
+  getProfile,
+  updateFavorites
 };

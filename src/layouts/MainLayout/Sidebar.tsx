@@ -6,9 +6,10 @@ import { NavLink, useLocation } from 'react-router';
 const navItems = [
   { id: 'home', label: '首页', path: '/', icon: 'home' },
   { id: 'text', label: '文本工具', path: '/text', icon: 'text' },
-  { id: 'time', label: '时间工具', path: '/time', icon: 'time' },
   { id: 'image', label: '图片工具', path: '/image', icon: 'image' },
   { id: 'json', label: 'JSON 工具', path: '/json', icon: 'json' },
+  { id: 'jwt', label: 'JWT 工具', path: '/jwt', icon: 'jwt' },
+  { id: 'codec', label: '编码工具', path: '/codec', icon: 'code' },
 ]
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {

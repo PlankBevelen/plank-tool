@@ -4,22 +4,32 @@ import { toast } from 'sonner';
 import type { TabItem } from '@/components/PlankTab';
 import PlankTab from '@/components/PlankTab';
 import { useState } from 'react';
-import TextDiff from './components/TextDiff';
+import Base64Tool from './components/Base64Tool';
+import UrlTool from './components/UrlTool';
+import UnicodeTool from './components/UnicodeTool';
+import HashTool from './components/HashTool';
+import UuidTool from './components/UuidTool';
+import RegexTool from './components/RegexTool';
 
-type Tab = 'diff';
+type Tab = 'base64' | 'url' | 'unicode' | 'hash' | 'uuid' | 'regex';
 
 const tabs: TabItem[] = [
-  { id: 'diff', label: 'Diff 对比' },
+  { id: 'base64', label: 'Base64' },
+  { id: 'url', label: 'URL' },
+  { id: 'unicode', label: 'Unicode' },
+  { id: 'hash', label: '哈希' },
+  { id: 'uuid', label: 'UUID' },
+  { id: 'regex', label: '正则' },
 ];
 
-export default function TextTool() {
-  const [activeTab, setActiveTab] = useState<Tab>('diff');
+export default function CodecTool() {
+  const [activeTab, setActiveTab] = useState<Tab>('base64');
   const { favorites, toggleFavorite, isLoggedIn } = useUserStore();
-  const isFav = favorites.includes('text');
+  const isFav = favorites.includes('codec');
 
   const handleFavorite = () => {
     if (!isLoggedIn) { toast.error('请先登录'); return; }
-    toggleFavorite('text');
+    toggleFavorite('codec');
     toast.success(isFav ? '已取消收藏' : '收藏成功');
   };
 
@@ -27,8 +37,8 @@ export default function TextTool() {
     <div className="p-6 md:p-10 mx-auto">
       <div className="flex items-center mb-8">
         <div className="mr-12">
-          <h1 className="text-zinc-900">文本工具</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">文本 Diff 对比与差异定位</p>
+          <h1 className="text-zinc-900">编码工具</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">Base64、URL、Unicode、哈希、UUID 与正则测试台</p>
         </div>
         <button
           onClick={handleFavorite}
@@ -47,7 +57,14 @@ export default function TextTool() {
       />
 
       <div className="mt-8"></div>
-      {activeTab === 'diff' && <TextDiff />}
+
+      {activeTab === 'base64' && <Base64Tool />}
+      {activeTab === 'url' && <UrlTool />}
+      {activeTab === 'unicode' && <UnicodeTool />}
+      {activeTab === 'hash' && <HashTool />}
+      {activeTab === 'uuid' && <UuidTool />}
+      {activeTab === 'regex' && <RegexTool />}
     </div>
   );
 }
+

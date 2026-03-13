@@ -30,6 +30,8 @@ export default function ImageCompress() {
   const [options, setOptions] = useState({
     quality: 80,
     maxWidth: 1920,
+    maxHeight: 1080,
+    format: 'keep' as 'keep' | 'jpeg' | 'png' | 'webp' | 'avif',
   });
 
   // Refs for scrolling synchronization
@@ -124,6 +126,10 @@ export default function ImageCompress() {
         formData.append('image', file);
         formData.append('quality', options.quality.toString());
         formData.append('maxWidth', options.maxWidth.toString());
+        formData.append('maxHeight', options.maxHeight.toString());
+        if (options.format !== 'keep') {
+          formData.append('format', options.format);
+        }
         
         const response = await client.post('/images/compress', formData, {
           headers: {
@@ -274,12 +280,10 @@ export default function ImageCompress() {
 
   return (
     <div className="flex flex-col h-full gap-6">
-      {/* 1. Combined Upload Area & Control Panel */}
-      <div className="flex flex-col md:flex-row gap-6 p-6 bg-white rounded-xl border border-zinc-200 shadow-sm items-stretch">
-        {/* Left: Upload Area */}
+      <div className="flex flex-col md:flex-row gap-6 p-6 bg-white rounded-xl border border-zinc-200 shadow-sm items-stretch w-min mx-auto ">
         <div 
           {...getRootProps()} 
-          className={`flex-1 min-w-[300px] border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors flex flex-col items-center justify-center gap-3
+          className={`flex-1 min-w-[600px] border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors flex flex-col items-center justify-center gap-3
             ${isDragActive ? 'border-zinc-400 bg-zinc-50' : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/50'}
           `}
         >
@@ -327,6 +331,35 @@ export default function ImageCompress() {
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400">px</span>
                 </div>
+             </div>
+
+             <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-zinc-700">最大高度限制</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={options.maxHeight}
+                    onChange={(e) => setOptions({ ...options, maxHeight: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 pr-8 transition-shadow"
+                    placeholder="1080"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400">px</span>
+                </div>
+             </div>
+
+             <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-zinc-700">输出格式</label>
+                <select
+                  value={options.format}
+                  onChange={(e) => setOptions({ ...options, format: e.target.value as any })}
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-shadow"
+                >
+                  <option value="keep">保持原格式</option>
+                  <option value="webp">WebP（推荐）</option>
+                  <option value="jpeg">JPG</option>
+                  <option value="png">PNG</option>
+                  <option value="avif">AVIF</option>
+                </select>
              </div>
           </div>
 
