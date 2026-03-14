@@ -15,79 +15,50 @@ const rawSiteUrl = String(
 ).trim();
 
 const defaultBaseUrl = 'https://tool.plankbevelen.cn';
-
-function normalizeBaseUrl(value) {
-  const trimmed = String(value || '').trim();
-  if (!trimmed) return defaultBaseUrl;
-
-  const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-
-  try {
-    return new URL(withProtocol).origin;
-  } catch {
-    return defaultBaseUrl;
-  }
-}
-
-function normalizeRoute(route) {
-  if (route === '/') return '/';
-  return String(route).replace(/\/+$/, '');
-}
-
-function parseEnvList(value) {
-  return String(value || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-const baseUrl = normalizeBaseUrl(rawSiteUrl);
-
-const routerFilePath = path.join(projectRoot, 'src', 'router', 'index.tsx');
-
-const fallbackRoutes = ['/', '/text', '/image', '/json', '/jwt', '/codec'];
-
-const excludeRoutes = new Set(
-  (parseEnvList(process.env.SITEMAP_EXCLUDE) || []).length
-    ? parseEnvList(process.env.SITEMAP_EXCLUDE)
-    : ['/login', '/register', '/settings']
-);
-
-let routes = fallbackRoutes;
-
-try {
-  const routerSource = await fs.readFile(routerFilePath, 'utf8');
-  const routeSet = new Set();
-
-  if (/index:\s*true/.test(routerSource)) routeSet.add('/');
-
-  for (const match of routerSource.matchAll(/path:\s*['"]([^'"]+)['"]/g)) {
-    const route = match[1];
-    if (!route || !route.startsWith('/')) continue;
-    if (route.includes(':')) continue;
-    routeSet.add(route);
-  }
-
-  routes = Array.from(routeSet)
-    .map(normalizeRoute)
-    .filter((route) => route === '/' || route.startsWith('/'))
-    .filter((route) => !excludeRoutes.has(route))
-    .sort((a, b) => {
-      if (a === '/' && b !== '/') return -1;
-      if (b === '/' && a !== '/') return 1;
-      return a.localeCompare(b);
-    });
-} catch {
-  routes = fallbackRoutes.filter((route) => !excludeRoutes.has(route));
-}
+const baseUrl = (rawSiteUrl || defaultBaseUrl).replace(/\/+$/, '');
 
 const lastmod = new Date().toISOString().slice(0, 10);
 
+const parseCsv = (value) =>
+  String(value || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const readRoutesFromRouter = async () => {
+  const routerFile = path.join(projectRoot, 'src', 'router', 'index.tsx');
+  const content = await fs.readFile(routerFile, 'utf8');
+
+  const routeSet = new Set();
+
+  if (/\bindex\s*:\s*true\b/.test(content)) {
+    routeSet.add('/');
+  }
+
+  const pathRegex = /\bpath\s*:\s*['"]([^'"]+)['"]/g;
+  for (const match of content.matchAll(pathRegex)) {
+    const p = String(match[1] || '').trim();
+    if (!p) continue;
+    if (!p.startsWith('/')) continue;
+    if (p.includes(':')) continue;
+    routeSet.add(p);
+  }
+
+  return [...routeSet].sort();
+};
+
+const routesOverride = parseCsv(process.env.SITEMAP_ROUTES);
+const routesFromRouter = routesOverride.length ? routesOverride : await readRoutesFromRouter();
+
+const excluded = new Set(
+  parseCsv(process.env.SITEMAP_EXCLUDE || '/login,/register,/settings')
+);
+
+const routes = routesFromRouter.filter((r) => !excluded.has(r));
+
 const urlEntries = routes
   .map((route) => {
-    const loc = `${baseUrl}${route === '/' ? '/' : route}`;
+    const loc = route === '/' ? `${baseUrl}/` : `${baseUrl}${route}`;
     return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
   })
   .join('\n');

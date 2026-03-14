@@ -5,25 +5,6 @@ import { formatBytes } from '@/lib/utils';
 import Icon from '@/lib/icon';
 import client from '@/api/client';
 
-type ConvertFormat = 'jpeg' | 'png' | 'webp' | 'avif';
-
-type ConvertApiResult = {
-  url: string;
-  filename: string;
-  originalSize: number;
-  compressedSize: number;
-  reduction: number;
-  width: number;
-  height: number;
-  format: string;
-};
-
-type ZipApiResult = {
-  url: string;
-  filename: string;
-  size: number;
-};
-
 interface ConvertedResult {
   original: File;
   result?: {
@@ -47,7 +28,7 @@ export default function ImageConvert() {
   const [isConverting, setIsConverting] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
   const [options, setOptions] = useState({
-    format: 'webp' as ConvertFormat,
+    format: 'webp' as 'jpeg' | 'png' | 'webp' | 'avif',
     quality: 85,
     maxWidth: 8192,
     maxHeight: 8192,
@@ -140,7 +121,7 @@ export default function ImageConvert() {
 
         const response = await client.post('/images/convert', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
-        }) as unknown as ConvertApiResult;
+        }) as any;
 
         setConvertedFiles((prev) => {
           const newArr = [...prev];
@@ -150,14 +131,11 @@ export default function ImageConvert() {
           return newArr;
         });
         successCount++;
-      } catch (error) {
-        const message = error instanceof Error
-          ? error.message
-          : (typeof error === 'object' && error && 'message' in error ? String((error as { message?: unknown }).message) : '转换失败');
+      } catch (error: any) {
         setConvertedFiles((prev) => {
           const newArr = [...prev];
           if (newArr[index]) {
-            newArr[index] = { original: file, status: 'error', error: message };
+            newArr[index] = { original: file, status: 'error', error: error.message || '转换失败' };
           }
           return newArr;
         });
@@ -219,7 +197,7 @@ export default function ImageConvert() {
         return { filename: item.result!.filename, originalName: item.original.name };
       });
 
-      const response = await client.post('/images/zip', { files: filesToZip }) as unknown as ZipApiResult;
+      const response = await client.post('/images/zip', { files: filesToZip }) as any;
 
       const link = document.createElement('a');
       link.href = response.url;
@@ -279,11 +257,7 @@ export default function ImageConvert() {
               <label className="text-sm font-medium text-zinc-700">目标格式</label>
               <select
                 value={options.format}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  const format: ConvertFormat = v === 'jpeg' || v === 'png' || v === 'webp' || v === 'avif' ? v : 'webp';
-                  setOptions({ ...options, format });
-                }}
+                onChange={(e) => setOptions({ ...options, format: e.target.value as any })}
                 className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-shadow"
               >
                 <option value="webp">WebP（推荐）</option>
@@ -499,3 +473,4 @@ export default function ImageConvert() {
     </div>
   );
 }
+

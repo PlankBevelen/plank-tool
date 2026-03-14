@@ -3,11 +3,10 @@ import { persist } from 'zustand/middleware';
 import client from '@/api/client';
 import { toast } from 'sonner';
 
-export interface User {
+interface User {
   username: string;
   email: string;
   role: string;
-  favorites?: string[];
 }
 
 export interface UserState {
@@ -31,7 +30,7 @@ export const useUserStore = create<UserState>()(
       favorites: [],
 
       login: (token, user) => {
-        const favorites = Array.isArray(user.favorites) ? user.favorites : get().favorites;
+        const favorites = Array.isArray((user as any)?.favorites) ? (user as any).favorites : get().favorites;
         set({ token, user, isLoggedIn: true, favorites });
       },
 
@@ -58,11 +57,10 @@ export const useUserStore = create<UserState>()(
 
       fetchProfile: async () => {
         try {
-          const res = await client.get('/users/profile') as unknown as { code: number; data?: { user?: User } };
+          const res: any = await client.get('/users/profile');
           if (res.code === 200) {
-            const user = res.data?.user ?? null;
-            const fav = user && Array.isArray(user.favorites) ? user.favorites : [];
-            set({ user, favorites: fav });
+            const fav = Array.isArray(res.data.user?.favorites) ? res.data.user.favorites : [];
+            set({ user: res.data.user, favorites: fav });
           }
         } catch (error) {
           console.error('Failed to fetch profile', error);

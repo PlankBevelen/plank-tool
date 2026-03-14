@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { toast } from 'sonner';
 
@@ -57,7 +57,7 @@ const mergeObjectShapes = (objs: Record<string, unknown>[]) => {
         f.optional = true;
         continue;
       }
-      const v = obj[k];
+      const v = (obj as any)[k] as unknown;
       if (v === null) f.types.add('null');
     }
   }
@@ -294,25 +294,36 @@ export default function JsonTypeGen() {
   const [target, setTarget] = useState<Target>('typescript');
   const [rootName, setRootName] = useState('Root');
   const [inputCode, setInputCode] = useState('');
+  const [outputCode, setOutputCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const normalizedRootName = useMemo(() => {
     const n = toPascalCase(rootName);
     return n || 'Root';
   }, [rootName]);
 
-  const { outputCode, error } = useMemo(() => {
-    if (!inputCode.trim()) return { outputCode: '', error: null as string | null };
+  const handleGenerate = useCallback(() => {
+    if (!inputCode.trim()) {
+      setOutputCode('');
+      setError(null);
+      return;
+    }
     try {
-      const parsed = JSON.parse(inputCode) as unknown;
+      const parsed = JSON.parse(inputCode);
+      setError(null);
       const code = target === 'typescript'
         ? generateTsInterfaces(parsed, normalizedRootName)
         : generateGoStructs(parsed, normalizedRootName);
-      return { outputCode: code, error: null as string | null };
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Invalid JSON';
-      return { outputCode: '', error: message };
+      setOutputCode(code);
+    } catch (e: any) {
+      setOutputCode('');
+      setError(e?.message || 'Invalid JSON');
     }
   }, [inputCode, normalizedRootName, target]);
+
+  useEffect(() => {
+    handleGenerate();
+  }, [handleGenerate]);
 
   const handleCopy = async () => {
     if (!outputCode) return;
@@ -439,3 +450,4 @@ export default function JsonTypeGen() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import Icon from '@/lib/icon';
 import { useUserStore } from '@/stores/useUserStore';
@@ -23,10 +23,9 @@ const bytesToB64Url = (bytes: Uint8Array) => {
 const tryParseJson = (bytes: Uint8Array) => {
   try {
     const txt = new TextDecoder().decode(bytes);
-    return { ok: true as const, value: JSON.parse(txt) as unknown, raw: txt };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : 'Invalid JSON';
-    return { ok: false as const, error: message };
+    return { ok: true as const, value: JSON.parse(txt), raw: txt };
+  } catch (e: any) {
+    return { ok: false as const, error: e?.message || 'Invalid JSON' };
   }
 };
 
@@ -37,16 +36,12 @@ const formatUnixSeconds = (v: unknown) => {
   return d.toLocaleString();
 };
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
-
 export default function JwtTool() {
   const { favorites, toggleFavorite, isLoggedIn } = useUserStore();
   const isFav = favorites.includes('jwt');
   const [token, setToken] = useState('');
   const [secret, setSecret] = useState('');
   const [verifyResult, setVerifyResult] = useState<'unknown' | 'valid' | 'invalid' | 'unsupported'>('unknown');
-  const [now, setNow] = useState(0);
 
   const parts = useMemo(() => token.trim().split('.').filter(Boolean), [token]);
   const headerDecoded = useMemo(() => {
@@ -58,22 +53,26 @@ export default function JwtTool() {
     return tryParseJson(b64UrlToBytes(parts[1]));
   }, [parts]);
 
-  const headerObj = headerDecoded && headerDecoded.ok && isRecord(headerDecoded.value) ? headerDecoded.value : null;
-  const payloadObj = payloadDecoded && payloadDecoded.ok && isRecord(payloadDecoded.value) ? payloadDecoded.value : null;
+  const headerObj = headerDecoded && headerDecoded.ok ? headerDecoded.value : null;
+  const payloadObj = payloadDecoded && payloadDecoded.ok ? payloadDecoded.value : null;
 
   const alg = useMemo(() => {
-    const v = headerObj?.alg;
-    return typeof v === 'string' ? v : null;
+    if (!headerObj || typeof headerObj !== 'object') return null;
+    return (headerObj as any).alg ?? null;
   }, [headerObj]);
 
-  const expText = useMemo(() => formatUnixSeconds(payloadObj?.exp), [payloadObj]);
-  const iatText = useMemo(() => formatUnixSeconds(payloadObj?.iat), [payloadObj]);
-  const nbfText = useMemo(() => formatUnixSeconds(payloadObj?.nbf), [payloadObj]);
+  const expText = useMemo(() => formatUnixSeconds((payloadObj as any)?.exp), [payloadObj]);
+  const iatText = useMemo(() => formatUnixSeconds((payloadObj as any)?.iat), [payloadObj]);
+  const nbfText = useMemo(() => formatUnixSeconds((payloadObj as any)?.nbf), [payloadObj]);
   const isExpired = useMemo(() => {
-    const exp = payloadObj?.exp;
-    if (typeof exp !== 'number' || now === 0) return null;
-    return now >= exp * 1000;
-  }, [now, payloadObj]);
+    const exp = (payloadObj as any)?.exp;
+    if (typeof exp !== 'number') return null;
+    return Date.now() >= exp * 1000;
+  }, [payloadObj]);
+
+  useEffect(() => {
+    setVerifyResult('unknown');
+  }, [token, secret]);
 
   const handleFavorite = () => {
     if (!isLoggedIn) { toast.error('请先登录'); return; }
@@ -96,14 +95,13 @@ export default function JwtTool() {
       toast.error('Header 解析失败');
       return;
     }
-    if (headerObj.alg !== 'HS256') {
+    if ((headerObj as any).alg !== 'HS256') {
       setVerifyResult('unsupported');
       toast.error('仅支持 HS256 验签');
       return;
     }
 
     try {
-      setNow(Date.now());
       const data = new TextEncoder().encode(`${ps[0]}.${ps[1]}`);
       const key = await crypto.subtle.importKey(
         'raw',
@@ -118,10 +116,9 @@ export default function JwtTool() {
       setVerifyResult(ok ? 'valid' : 'invalid');
       if (ok) toast.success('签名验证通过');
       else toast.error('签名不匹配');
-    } catch (e) {
+    } catch (e: any) {
       setVerifyResult('invalid');
-      const message = e instanceof Error ? e.message : '验签失败';
-      toast.error(message);
+      toast.error(e?.message || '验签失败');
     }
   };
 
@@ -151,11 +148,7 @@ export default function JwtTool() {
             <div className="text-sm font-medium text-zinc-700">JWT</div>
             <textarea
               value={token}
-              onChange={(e) => {
-                setToken(e.target.value);
-                setVerifyResult('unknown');
-                setNow(Date.now());
-              }}
+              onChange={(e) => setToken(e.target.value)}
               placeholder="粘贴 JWT（header.payload.signature）"
               className="w-full h-36 px-3 py-2 rounded-lg border border-zinc-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
             />
@@ -169,11 +162,7 @@ export default function JwtTool() {
               <div className="text-sm font-medium text-zinc-700">HS256 密钥（可选）</div>
               <input
                 value={secret}
-                onChange={(e) => {
-                  setSecret(e.target.value);
-                  setVerifyResult('unknown');
-                  setNow(Date.now());
-                }}
+                onChange={(e) => setSecret(e.target.value)}
                 placeholder="输入 secret 用于验签"
                 className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
               />
@@ -294,3 +283,4 @@ export default function JwtTool() {
     </div>
   );
 }
+

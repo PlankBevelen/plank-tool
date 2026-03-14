@@ -32,11 +32,10 @@ export default function QRCodeTool() {
           setDataUrl(url);
           setError(null);
         }
-      } catch (e) {
+      } catch (e: any) {
         if (!cancelled) {
           setDataUrl('');
-          const message = e instanceof Error ? e.message : '生成失败';
-          setError(message);
+          setError(e?.message || '生成失败');
         }
       }
     };
@@ -156,3 +155,4 @@ export default function QRCodeTool() {
     </div>
   );
 }
+

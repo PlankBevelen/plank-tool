@@ -5,46 +5,23 @@ import { useUserStore } from '@/stores/useUserStore';
 import client from '@/api/client';
 import { toast } from 'sonner';
 
-type RegisterFormValues = {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
-
-type RegisterResponse = {
-  code: number;
-  data: {
-    token: string;
-    user: {
-      username: string;
-      email: string;
-      role: string;
-      favorites?: string[];
-    };
-  };
-};
-
 export default function Register() {
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<RegisterFormValues>();
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
   const login = useUserStore((state) => state.login);
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
 
-  const onSubmit = async (data: RegisterFormValues) => {
+  const onSubmit = async (data: any) => {
     try {
       setServerError('');
-      const res = await client.post('/auth/register', data) as unknown as RegisterResponse;
+      const res: any = await client.post('/auth/register', data);
       if (res.code === 201) {
         login(res.data.token, res.data.user);
         toast.success('注册成功');
         navigate('/');
       }
-    } catch (err) {
-      const message = err instanceof Error
-        ? err.message
-        : (typeof err === 'object' && err && 'message' in err ? String((err as { message?: unknown }).message) : '注册失败');
-      setServerError(message);
+    } catch (err: any) {
+      setServerError(err.message || '注册失败');
     }
   };
 

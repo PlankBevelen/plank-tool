@@ -5,44 +5,23 @@ import { useUserStore } from '@/stores/useUserStore';
 import client from '@/api/client';
 import { toast } from 'sonner';
 
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
-
-type LoginResponse = {
-  code: number;
-  data: {
-    token: string;
-    user: {
-      username: string;
-      email: string;
-      role: string;
-      favorites?: string[];
-    };
-  };
-};
-
 export default function Login() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const login = useUserStore((state) => state.login);
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: any) => {
     try {
       setServerError('');
-      const res = await client.post('/auth/login', data) as unknown as LoginResponse;
+      const res: any = await client.post('/auth/login', data);
       if (res.code === 200) {
         login(res.data.token, res.data.user);
         toast.success('登录成功');
         navigate('/');
       }
-    } catch (err) {
-      const message = err instanceof Error
-        ? err.message
-        : (typeof err === 'object' && err && 'message' in err ? String((err as { message?: unknown }).message) : '登录失败');
-      setServerError(message);
+    } catch (err: any) {
+      setServerError(err.message || '登录失败');
     }
   };
 

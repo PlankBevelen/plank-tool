@@ -17,9 +17,8 @@ export default function RegexTool() {
   const compiled = useMemo(() => {
     try {
       return { ok: true as const, re: new RegExp(pattern, flags) };
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Invalid regex';
-      return { ok: false as const, error: message };
+    } catch (e: any) {
+      return { ok: false as const, error: e?.message || 'Invalid regex' };
     }
   }, [pattern, flags]);
 
@@ -140,3 +139,4 @@ export default function RegexTool() {
     </div>
   );
 }
+
