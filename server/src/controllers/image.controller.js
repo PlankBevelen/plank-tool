@@ -5,6 +5,12 @@ const { imageService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const path = require('path');
 
+const toPublicUrl = (req, filename) => {
+  const protocol = req.protocol;
+  const host = req.get('host');
+  return `${protocol}://${host}/uploads/${filename}`;
+};
+
 const compress = catchAsync(async (req, res) => {
   if (!req.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a file');
@@ -23,10 +29,7 @@ const compress = catchAsync(async (req, res) => {
   const compressedSize = result.size;
   const reduction = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
 
-  // Generate public URL
-  const protocol = req.protocol;
-  const host = req.get('host');
-  const url = `${protocol}://${host}/uploads/${result.filename}`;
+  const url = toPublicUrl(req, result.filename);
 
   res.status(httpStatus.OK).send({
     ...result,
@@ -55,9 +58,7 @@ const convert = catchAsync(async (req, res) => {
   const compressedSize = result.size;
   const reduction = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
 
-  const protocol = req.protocol;
-  const host = req.get('host');
-  const url = `${protocol}://${host}/uploads/${result.filename}`;
+  const url = toPublicUrl(req, result.filename);
 
   res.status(httpStatus.OK).send({
     ...result,
@@ -92,9 +93,7 @@ const downloadZip = catchAsync(async (req, res) => {
 
   const zipResult = await imageService.createZipArchive(filesToZip);
   
-  const protocol = req.protocol;
-  const host = req.get('host');
-  const url = `${protocol}://${host}/uploads/${zipResult.filename}`;
+  const url = toPublicUrl(req, zipResult.filename);
 
   res.status(httpStatus.OK).send({
     ...zipResult,
@@ -102,8 +101,33 @@ const downloadZip = catchAsync(async (req, res) => {
   });
 });
 
+const metadata = catchAsync(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a file');
+  }
+
+  const meta = await imageService.getImageMetadata(req.file.buffer);
+  res.status(httpStatus.OK).send(meta);
+});
+
+const stripMetadata = catchAsync(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a file');
+  }
+
+  const result = await imageService.stripMetadata(req.file.buffer, { format: req.body.format });
+  const url = toPublicUrl(req, result.filename);
+
+  res.status(httpStatus.OK).send({
+    ...result,
+    url
+  });
+});
+
 module.exports = {
   compress,
   convert,
-  downloadZip
+  downloadZip,
+  metadata,
+  stripMetadata
 };

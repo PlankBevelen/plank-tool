@@ -3,6 +3,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const archiver = require('archiver');
+const exifReader = require('exif-reader');
 
 const UPLOADS_DIR = path.join(__dirname, '../../uploads');
 
@@ -130,7 +131,75 @@ const createZipArchive = async (files) => {
   });
 };
 
+const getImageMetadata = async (fileBuffer) => {
+  const pipeline = sharp(fileBuffer);
+  const metadata = await pipeline.metadata();
+
+  let exif = null;
+  if (metadata.exif) {
+    try {
+      exif = exifReader(metadata.exif);
+    } catch {
+      exif = null;
+    }
+  }
+
+  return {
+    format: metadata.format,
+    width: metadata.width,
+    height: metadata.height,
+    space: metadata.space,
+    channels: metadata.channels,
+    depth: metadata.depth,
+    density: metadata.density,
+    hasAlpha: metadata.hasAlpha,
+    orientation: metadata.orientation,
+    exif
+  };
+};
+
+const stripMetadata = async (fileBuffer, options = {}) => {
+  const { format } = options;
+  const pipeline = sharp(fileBuffer).rotate();
+  const metadata = await pipeline.metadata();
+
+  const targetFormat = normalizeFormat(format) || normalizeFormat(metadata.format) || 'jpeg';
+  let output = pipeline;
+
+  switch (targetFormat) {
+    case 'jpeg':
+      output = output.jpeg({ quality: 90, mozjpeg: true });
+      break;
+    case 'png':
+      output = output.png({ compressionLevel: 9, palette: true });
+      break;
+    case 'webp':
+      output = output.webp({ quality: 90 });
+      break;
+    case 'avif':
+      output = output.avif({ quality: 80 });
+      break;
+    default:
+      output = output.toFormat(targetFormat);
+  }
+
+  const filename = `sanitized-${uuidv4()}.${targetFormat === 'jpeg' ? 'jpg' : targetFormat}`;
+  const filepath = path.join(UPLOADS_DIR, filename);
+  const info = await output.toFile(filepath);
+
+  return {
+    filename,
+    path: filepath,
+    size: info.size,
+    width: info.width,
+    height: info.height,
+    format: info.format
+  };
+};
+
 module.exports = {
   compressImage,
-  createZipArchive
+  createZipArchive,
+  getImageMetadata,
+  stripMetadata
 };

@@ -3,6 +3,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const app = require('./app');
 const connectDB = require('./config/database');
 const logger = require('./config/logger');
+const { startUploadsCleanup } = require('./jobs/uploadsCleanup');
 
 const PORT = process.env.PORT || 3000;
 
@@ -11,6 +12,12 @@ connectDB();
 
 const server = app.listen(PORT, () => {
   logger.info(`Server listening on port ${PORT}`);
+});
+
+startUploadsCleanup({
+  ttlMs: process.env.UPLOADS_TTL_MS ? Number(process.env.UPLOADS_TTL_MS) : 60 * 60 * 1000,
+  intervalMs: process.env.UPLOADS_CLEAN_INTERVAL_MS ? Number(process.env.UPLOADS_CLEAN_INTERVAL_MS) : 15 * 60 * 1000,
+  logger
 });
 
 const exitHandler = () => {

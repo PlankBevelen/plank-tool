@@ -60,6 +60,29 @@ describe('Image Endpoints', () => {
     expect(res.body.format).toEqual('webp');
   });
 
+  it('should get image metadata (including exif if present)', async () => {
+    const res = await request(app)
+      .post('/api/images/metadata')
+      .attach('image', testImageBuffer, 'test.png');
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('format');
+    expect(res.body).toHaveProperty('width');
+    expect(res.body).toHaveProperty('height');
+    expect(res.body).toHaveProperty('exif');
+  });
+
+  it('should strip metadata and output a sanitized file', async () => {
+    const res = await request(app)
+      .post('/api/images/strip-metadata')
+      .attach('image', testImageBuffer, 'test.png');
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('url');
+    expect(res.body).toHaveProperty('filename');
+    expect(res.body.filename).toMatch(/^sanitized-/);
+  });
+
   it('should fail if no image is uploaded', async () => {
     const res = await request(app)
       .post('/api/images/compress')

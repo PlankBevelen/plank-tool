@@ -3,8 +3,25 @@ const validate = require('../middlewares/validate');
 const upload = require('../middlewares/upload');
 const imageController = require('../controllers/image.controller');
 const Joi = require('joi');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+
+const imageHeavyLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many image requests from this IP, please try again later.'
+});
+
+const zipLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many zip requests from this IP, please try again later.'
+});
 
 const compressSchema = {
   body: Joi.object().keys({
@@ -35,6 +52,12 @@ const zipSchema = {
   })
 };
 
+const stripSchema = {
+  body: Joi.object().keys({
+    format: Joi.string().valid('jpeg', 'jpg', 'png', 'webp', 'avif')
+  })
+};
+
 /**
  * @route POST /api/images/compress
  * @desc Compress an image
@@ -42,6 +65,7 @@ const zipSchema = {
  */
 router.post(
   '/compress',
+  imageHeavyLimiter,
   upload.single('image'),
   validate(compressSchema),
   imageController.compress
@@ -49,9 +73,25 @@ router.post(
 
 router.post(
   '/convert',
+  imageHeavyLimiter,
   upload.single('image'),
   validate(convertSchema),
   imageController.convert
+);
+
+router.post(
+  '/metadata',
+  imageHeavyLimiter,
+  upload.single('image'),
+  imageController.metadata
+);
+
+router.post(
+  '/strip-metadata',
+  imageHeavyLimiter,
+  upload.single('image'),
+  validate(stripSchema),
+  imageController.stripMetadata
 );
 
 /**
@@ -61,6 +101,7 @@ router.post(
  */
 router.post(
   '/zip',
+  zipLimiter,
   validate(zipSchema),
   imageController.downloadZip
 );

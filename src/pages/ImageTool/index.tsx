@@ -6,8 +6,10 @@ import PlankTab from "@/components/PlankTab";
 import { useState } from "react";
 import ImageCompress from './components/ImageCompress';
 import ImageConvert from './components/ImageConvert';
+import ImageMetadata from './components/ImageMetadata';
+import QRCodeTool from './components/QRCodeTool';
 
-type Tab = 'compress' | 'convert' | 'qrcode';
+type Tab = 'compress' | 'convert' | 'metadata' | 'qrcode';
 const tabs: TabItem[] = [
   {
     id: 'compress',
@@ -16,6 +18,10 @@ const tabs: TabItem[] = [
   {
     id: 'convert',
     label: '格式转换',
+  },
+  {
+    id: 'metadata',
+    label: 'Exif/隐私',
   },
   {
     id: 'qrcode',
@@ -44,7 +50,6 @@ export default function ImageTool() {
         <button onClick={handleFavorite}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all border
             ${isFav ? 'text-amber-500 border-amber-200 bg-amber-50' : 'text-zinc-400 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'}`}>
-          {/* <Star size={14} fill={isFav ? 'currentColor' : 'none'} /> */}
           <Icon name='star' className="w-5 h-5"/>
           <span>{isFav ? '已收藏' : '收藏'}</span>
         </button>
@@ -58,7 +63,8 @@ export default function ImageTool() {
       <div className="mt-8"></div>
       {activeTab === 'compress' && <ImageCompress />}
       {activeTab === 'convert' && <ImageConvert />}
-      {/* {activeTab === 'qrcode' && <QRCode />} */}
+      {activeTab === 'metadata' && <ImageMetadata />}
+      {activeTab === 'qrcode' && <QRCodeTool />}
     </div>
   )
 }

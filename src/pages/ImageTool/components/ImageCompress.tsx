@@ -178,7 +178,6 @@ export default function ImageCompress() {
   const handleDownload = async (item: CompressedResult, index: number) => {
     if (item.status !== 'success' || !item.result) return;
     
-    // Set downloading status
     setCompressedFiles(prev => {
       const newArr = [...prev];
       if (newArr[index]) {
@@ -295,7 +294,6 @@ export default function ImageCompress() {
           </div>
         </div>
 
-        {/* Right: Control Panel */}
         <div className="flex-none w-full md:w-[320px] flex flex-col gap-6 justify-between py-1">
           <div className="space-y-6">
              <div className="flex flex-col gap-2">

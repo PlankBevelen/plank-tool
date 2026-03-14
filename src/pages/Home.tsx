@@ -76,8 +76,7 @@ export default function Home() {
   };
 
   return (
-    <div className="p-6 md:p-10 max-w-4xl mx-auto">
-      {/* Hero */}
+    <div className="p-6 md:p-10 max-w-6xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -94,12 +93,11 @@ export default function Home() {
         </p>
       </motion.div>
 
-      {/* Tool cards */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-3"
       >
         {tools.map((tool) => {
           const isFav = favorites.includes(tool.id);

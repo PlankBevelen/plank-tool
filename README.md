@@ -9,12 +9,13 @@
 - 图片加工站 (Image Tools)
   - 智能压缩与转换：支持 JPG/PNG/WebP，批量处理、自由调节压缩质量与最大宽高限制，并支持格式强转（如统一转为更小巧的 WebP）
   - 图片格式转换：提供图片格式转换方法，比如png转webp、avif等
-  - **隐私与元数据（规划中）：** 图片 Exif 信息一键查看与清除
+  - **隐私与元数据：** 图片 Exif 信息一键查看与清除
+  - 二维码生成：链接生成二维码
 - JSON 工具
   - JSON 格式化与校验
   - JSON 转 XML、JSON 转 JS Object
   - **类型推导（Type Generator）：** 一键将 JSON 结构转换为 **TypeScript Interface** 或 **Go Struct**，无缝对接前后端接口联调
-- JWT 
+- JWT
   - 深度解析
 - 文本
   - 文本 Diff 对比： 双屏对比两段代码、长文本或环境变量文件的差异，精准定位修改点。
