@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://localhost:9090/</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/text</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/image</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/json</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/jwt</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/codec</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/login</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:9090/register</loc>
+    <lastmod>2026-03-14</lastmod>
+  </url>
+</urlset>
