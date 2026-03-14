@@ -1,35 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://tool.plankbevelen.cn/</loc>
+    <loc>https://tool.plankbevelen.cn/</loc>
     <lastmod>2026-03-14</lastmod>
   </url>
   <url>
-    <loc>http://tool.plankbevelen.cn/text</loc>
+    <loc>https://tool.plankbevelen.cn/codec</loc>
     <lastmod>2026-03-14</lastmod>
   </url>
   <url>
-    <loc>http://tool.plankbevelen.cn/image</loc>
+    <loc>https://tool.plankbevelen.cn/image</loc>
     <lastmod>2026-03-14</lastmod>
   </url>
   <url>
-    <loc>http://tool.plankbevelen.cn/json</loc>
+    <loc>https://tool.plankbevelen.cn/json</loc>
     <lastmod>2026-03-14</lastmod>
   </url>
   <url>
-    <loc>http://tool.plankbevelen.cn/jwt</loc>
+    <loc>https://tool.plankbevelen.cn/jwt</loc>
     <lastmod>2026-03-14</lastmod>
   </url>
   <url>
-    <loc>http://tool.plankbevelen.cn/codec</loc>
-    <lastmod>2026-03-14</lastmod>
-  </url>
-  <url>
-    <loc>http://tool.plankbevelen.cn/login</loc>
-    <lastmod>2026-03-14</lastmod>
-  </url>
-  <url>
-    <loc>http://tool.plankbevelen.cn/register</loc>
+    <loc>https://tool.plankbevelen.cn/text</loc>
     <lastmod>2026-03-14</lastmod>
   </url>
 </urlset>

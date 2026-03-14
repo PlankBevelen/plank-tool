@@ -103,8 +103,9 @@ export default function HashTool() {
       try {
         const res = await digest(algo, input);
         if (!cancelled) { setOutput(res); setError(null); }
-      } catch (e: any) {
-        if (!cancelled) { setOutput(''); setError(e?.message || '计算失败'); }
+      } catch (e) {
+        const message = e instanceof Error ? e.message : '计算失败';
+        if (!cancelled) { setOutput(''); setError(message); }
       }
     };
     run();
@@ -166,4 +167,3 @@ export default function HashTool() {
     </div>
   );
 }
-

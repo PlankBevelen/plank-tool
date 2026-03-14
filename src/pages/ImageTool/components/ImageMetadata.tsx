@@ -5,6 +5,8 @@ import Editor from '@monaco-editor/react';
 import client from '@/api/client';
 import Icon from '@/lib/icon';
 
+type StripFormat = 'keep' | 'jpeg' | 'png' | 'webp' | 'avif';
+
 type Meta = {
   format?: string;
   width?: number;
@@ -15,7 +17,7 @@ type Meta = {
   density?: number;
   hasAlpha?: boolean;
   orientation?: number;
-  exif: any;
+  exif?: unknown;
 };
 
 export default function ImageMetadata() {
@@ -23,7 +25,7 @@ export default function ImageMetadata() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(false);
   const [stripping, setStripping] = useState(false);
-  const [stripFormat, setStripFormat] = useState<'keep' | 'jpeg' | 'png' | 'webp' | 'avif'>('keep');
+  const [stripFormat, setStripFormat] = useState<StripFormat>('keep');
   const [sanitizedUrl, setSanitizedUrl] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -73,11 +75,12 @@ export default function ImageMetadata() {
       formData.append('image', file);
       const res = await client.post('/images/metadata', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      }) as any;
+      }) as unknown as Meta;
       setMeta(res);
       toast.success('已解析元数据');
-    } catch (e: any) {
-      toast.error(e?.message || '解析失败');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '解析失败';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -92,11 +95,12 @@ export default function ImageMetadata() {
       if (stripFormat !== 'keep') formData.append('format', stripFormat);
       const res = await client.post('/images/strip-metadata', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      }) as any;
+      }) as unknown as { url: string };
       setSanitizedUrl(res.url);
       toast.success('已生成清除元数据的图片');
-    } catch (e: any) {
-      toast.error(e?.message || '处理失败');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '处理失败';
+      toast.error(message);
     } finally {
       setStripping(false);
     }
@@ -152,7 +156,11 @@ export default function ImageMetadata() {
               <label className="text-sm font-medium text-zinc-700">输出格式（清除元数据时）</label>
               <select
                 value={stripFormat}
-                onChange={(e) => setStripFormat(e.target.value as any)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const format: StripFormat = v === 'keep' || v === 'jpeg' || v === 'png' || v === 'webp' || v === 'avif' ? v : 'keep';
+                  setStripFormat(format);
+                }}
                 className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-shadow"
               >
                 <option value="keep">保持原格式</option>
@@ -243,4 +251,3 @@ export default function ImageMetadata() {
     </div>
   );
 }
-

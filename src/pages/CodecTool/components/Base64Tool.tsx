@@ -65,8 +65,9 @@ export default function Base64Tool() {
       const base64Part = dataUrl.split(',')[1] || '';
       setB64(base64Part);
       toast.success('已转换为 Base64');
-    } catch (e: any) {
-      toast.error(e?.message || '转换失败');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '转换失败';
+      toast.error(message);
     }
   };
 
@@ -167,4 +168,3 @@ export default function Base64Tool() {
     </div>
   );
 }
-

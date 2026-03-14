@@ -5,6 +5,25 @@ import { formatBytes } from '@/lib/utils';
 import Icon from '@/lib/icon';
 import client from '@/api/client';
 
+type OutputFormat = 'keep' | 'jpeg' | 'png' | 'webp' | 'avif';
+
+type CompressApiResult = {
+  url: string;
+  filename: string;
+  originalSize: number;
+  compressedSize: number;
+  reduction: number;
+  width: number;
+  height: number;
+  format: string;
+};
+
+type ZipApiResult = {
+  url: string;
+  filename: string;
+  size: number;
+};
+
 interface CompressedResult {
   original: File;
   result?: {
@@ -31,7 +50,7 @@ export default function ImageCompress() {
     quality: 80,
     maxWidth: 1920,
     maxHeight: 1080,
-    format: 'keep' as 'keep' | 'jpeg' | 'png' | 'webp' | 'avif',
+    format: 'keep' as OutputFormat,
   });
 
   // Refs for scrolling synchronization
@@ -135,7 +154,7 @@ export default function ImageCompress() {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }) as any; 
+        }) as unknown as CompressApiResult; 
         
         setCompressedFiles(prev => {
             const newArr = [...prev];
@@ -151,15 +170,17 @@ export default function ImageCompress() {
         });
         successCount++;
         
-      } catch (error: any) {
-        console.error(error);
+      } catch (error) {
+        const message = error instanceof Error
+          ? error.message
+          : (typeof error === 'object' && error && 'message' in error ? String((error as { message?: unknown }).message) : '压缩失败');
         setCompressedFiles(prev => {
             const newArr = [...prev];
             if (newArr[index]) {
                 newArr[index] = {
                     original: file,
                     status: 'error',
-                    error: error.message || '压缩失败'
+                    error: message
                 };
             }
             return newArr;
@@ -238,7 +259,7 @@ export default function ImageCompress() {
           };
       });
 
-      const response = await client.post('/images/zip', { files: filesToZip }) as any;
+      const response = await client.post('/images/zip', { files: filesToZip }) as unknown as ZipApiResult;
       
       const link = document.createElement('a');
       link.href = response.url;
@@ -247,8 +268,7 @@ export default function ImageCompress() {
       link.click();
       document.body.removeChild(link);
       toast.success('已开始下载压缩包');
-    } catch (error: any) {
-      console.error(error);
+    } catch {
       toast.error('创建压缩包失败');
     } finally {
       setIsZipping(false);
@@ -349,7 +369,11 @@ export default function ImageCompress() {
                 <label className="text-sm font-medium text-zinc-700">输出格式</label>
                 <select
                   value={options.format}
-                  onChange={(e) => setOptions({ ...options, format: e.target.value as any })}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const format: OutputFormat = v === 'keep' || v === 'jpeg' || v === 'png' || v === 'webp' || v === 'avif' ? v : 'keep';
+                    setOptions({ ...options, format });
+                  }}
                   className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-shadow"
                 >
                   <option value="keep">保持原格式</option>

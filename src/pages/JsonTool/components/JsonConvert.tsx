@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { toast } from 'sonner';
 import xmlFormatter from 'xml-formatter';
@@ -37,53 +37,41 @@ const jsonToJsObj = (obj: unknown) => {
 
 export default function JsonConvert() {
   const [inputCode, setInputCode] = useState('');
-  const [outputCode, setOutputCode] = useState('');
   const [targetType, setTargetType] = useState<ConvertType>('xml');
-  const [error, setError] = useState<string | null>(null);
 
-  const handleConvert = useCallback(() => {
-    if (!inputCode.trim()) {
-      setOutputCode('');
-      setError(null);
-      return;
-    }
+  const { outputCode, error } = useMemo(() => {
+    if (!inputCode.trim()) return { outputCode: '', error: null as string | null };
 
     try {
-      const parsed = JSON.parse(inputCode);
-      setError(null);
+      const parsed = JSON.parse(inputCode) as unknown;
       let result = '';
 
       switch (targetType) {
-        case 'xml':
+        case 'xml': {
           result = jsonToXml(parsed);
           try {
-            result = xmlFormatter(result, { 
-              indentation: '  ', 
-              filter: (node) => node.type !== 'Comment', 
-              collapseContent: true, 
-              lineSeparator: '\n' 
+            result = xmlFormatter(result, {
+              indentation: '  ',
+              filter: (node) => node.type !== 'Comment',
+              collapseContent: true,
+              lineSeparator: '\n'
             });
-          } catch (e) {
-            console.warn('XML formatting failed:', e);
+          } catch {
+            result = jsonToXml(parsed);
           }
           break;
+        }
         case 'javascript':
           result = jsonToJsObj(parsed);
           break;
       }
-      setOutputCode(result);
+
+      return { outputCode: result, error: null as string | null };
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Invalid JSON');
-      }
+      const message = err instanceof Error ? err.message : 'Invalid JSON';
+      return { outputCode: '', error: message };
     }
   }, [inputCode, targetType]);
-
-  useEffect(() => {
-    handleConvert();
-  }, [handleConvert]);
 
   const handleCopy = async () => {
     if (!outputCode) return;
