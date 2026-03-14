@@ -14,11 +14,16 @@ const server = app.listen(PORT, () => {
   logger.info(`Server listening on port ${PORT}`);
 });
 
-startUploadsCleanup({
-  ttlMs: process.env.UPLOADS_TTL_MS ? Number(process.env.UPLOADS_TTL_MS) : 60 * 60 * 1000,
-  intervalMs: process.env.UPLOADS_CLEAN_INTERVAL_MS ? Number(process.env.UPLOADS_CLEAN_INTERVAL_MS) : 15 * 60 * 1000,
-  logger
-});
+const shouldRunCleanup = process.env.UPLOADS_CLEANUP_ENABLED !== 'false'
+  && (process.env.NODE_APP_INSTANCE === undefined || process.env.NODE_APP_INSTANCE === '0');
+
+if (shouldRunCleanup) {
+  startUploadsCleanup({
+    ttlMs: process.env.UPLOADS_TTL_MS ? Number(process.env.UPLOADS_TTL_MS) : 60 * 60 * 1000,
+    intervalMs: process.env.UPLOADS_CLEAN_INTERVAL_MS ? Number(process.env.UPLOADS_CLEAN_INTERVAL_MS) : 15 * 60 * 1000,
+    logger
+  });
+}
 
 const exitHandler = () => {
   if (server) {
