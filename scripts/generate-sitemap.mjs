@@ -14,7 +14,7 @@ const rawSiteUrl = String(
     ''
 ).trim();
 
-const baseUrl = (rawSiteUrl || `http://localhost:${process.env.VITE_PORT || 5173}`).replace(/\/+$/, '');
+const baseUrl = 'http://tool.plankbevelen.cn';
 
 const routes = ['/', '/text', '/image', '/json', '/jwt', '/codec', '/login', '/register'];
 const lastmod = new Date().toISOString().slice(0, 10);
